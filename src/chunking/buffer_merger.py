@@ -1,12 +1,13 @@
 import tiktoken
 from semantic_chunker import SemanticChunker
-
+from sentence_transformers import SentenceTransformer
 
 class SemanticChunkMerger:
     def __init__(self, max_tokens=1024, subchunk_size=128, overlap=32):
         self.max_tokens = max_tokens
         self.subchunk_size = subchunk_size
         self.overlap = overlap
+        self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
 
     def merge_chunks(self, chunks):
@@ -66,7 +67,17 @@ if __name__ == "__main__":
     merged_chunks = merger.merge_chunks(chunks)
 
     # Wrap each chunk in dict with 'id' and 'text'
-    chunk_data = [{"id": i + 1, "text": chunk} for i, chunk in enumerate(merged_chunks)]
+    embeddings = merger.embedder.encode(merged_chunks)
+
+    chunk_data = [
+        {
+            "id": i + 1,
+            "text": merged_chunks[i],
+            "embedding": embeddings[i].tolist()  # IMPORTANT
+        }
+        for i in range(len(merged_chunks))
+    ]
+
 
     # Save to JSON
     with open(output_path, "w", encoding="utf-8") as f:

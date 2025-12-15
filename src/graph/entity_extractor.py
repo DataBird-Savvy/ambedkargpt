@@ -1,4 +1,3 @@
-# src/graph/entity_extractor.py
 
 import spacy
 from typing import List, Dict
@@ -15,7 +14,7 @@ class EntityExtractor:
         results = []
 
         for chunk in chunks:
-            print("Processing chunk ID:", chunk)
+            print("Processing chunk :", chunk)
             doc = self.nlp(chunk["text"])
 
             entities = list({ent.text for ent in doc.ents})

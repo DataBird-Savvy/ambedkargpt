@@ -1,20 +1,17 @@
 import nltk
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-
+import tiktoken
 nltk.download("punkt")
 
 
 class SemanticChunker:
-    def __init__(self, model_name="all-MiniLM-L6-v2", similarity_threshold=0.65):
-        """
-        Initialize the semantic chunker with:
-        - SentenceTransformer model
-        - Cosine similarity threshold
-        """
-        self.model = SentenceTransformer(model_name)
-        self.sim_threshold = similarity_threshold
-
+    def __init__(self,embedding_model="all-MiniLM-L6-v2"):
+          
+            
+            self.embedder = SentenceTransformer(embedding_model)
+            self.sim_threshold = .65
+            
     def chunk(self, text: str):
         """
         Perform semantic chunking on the input text.
@@ -30,7 +27,7 @@ class SemanticChunker:
             return []
 
         # Step 2: Encode sentences
-        embeddings = self.model.encode(sentences)
+        embeddings = self.embedder.encode(sentences)
 
         chunks = []
         current_chunk = [sentences[0]]

@@ -1,0 +1,7 @@
+neo4j
+nltk
+scikit-learn
+tiktoken
+sentence_transformers
+langchain_community
+python-louvain
