@@ -66,42 +66,48 @@ SEMRAG employs a **dual retrieval strategy** that combines precise entity-level 
 
 ## 📂 Project Structure
 
-
-
+```text
 ambedkargpt/
 ├── data/
-│ ├── Ambedkar_works.pdf
-│ └── processed/
-│ ├── chunks.json
-│ └── knowledge_graph.pkl
+│   ├── Ambedkar_works.pdf
+│   └── processed/
+│       ├── chunks.json
+│       └── knowledge_graph.pkl
+│
 ├── src/
-│ ├── chunking/
-│ │ ├── semantic_chunker.py # Algorithm 1 (SEMRAG)
-│ │ └── buffer_merger.py
-│ ├── graph/
-│ │ ├── entity_extractor.py
-│ │ ├── graph_builder.py
-│ │ ├── community_detector.py
-│ │ └── summarizer.py
-│ ├── retrieval/
-│ │ ├── local_search.py # Equation 4 (SEMRAG)
-│ │ ├── global_search.py # Equation 5 (SEMRAG)
-│ │ └── ranker.py
-│ ├── llm/
-│ │ ├── llm_client.py
-│ │ ├── prompt_templates.py
-│ │ └── answer_generator.py
-│ └── pipeline/
-│ └── ambedkargpt.py # Main pipeline
+│   ├── chunking/
+│   │   ├── semantic_chunker.py     # SEMRAG Algorithm 1
+│   │   └── buffer_merger.py
+│   │
+│   ├── graph/
+│   │   ├── entity_extractor.py
+│   │   ├── graph_builder.py
+│   │   ├── community_detector.py
+│   │   └── summarizer.py
+│   │
+│   ├── retrieval/
+│   │   ├── local_search.py         # SEMRAG Equation 4
+│   │   ├── global_search.py        # SEMRAG Equation 5
+│   │   └── ranker.py
+│   │
+│   ├── llm/
+│   │   ├── llm_client.py
+│   │   ├── prompt_templates.py
+│   │   └── answer_generator.py
+│   │
+│   └── pipeline/
+│       └── ambedkargpt.py          # Main pipeline
+│
 ├── tests/
-│ ├── test_chunking.py
-│ ├── test_retrieval.py
-│ └── test_integration.py
+│   ├── test_chunking.py
+│   ├── test_retrieval.py
+│   └── test_integration.py
+│
 ├── config.yaml
 ├── requirements.txt
 ├── setup.py
 └── README.md
-
+```
 ## 📚 References
 
 - SEMRAG: Semantic Retrieval-Augmented Generation (Research Paper)
