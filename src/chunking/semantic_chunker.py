@@ -1,16 +1,13 @@
-import nltk
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
-import tiktoken
-nltk.download("punkt")
+import spacy
+nlp = spacy.load("en_core_web_sm")
 
 
 class SemanticChunker:
-    def __init__(self,embedding_model="all-MiniLM-L6-v2"):
-          
-            
+    def __init__(self,embedding_model,sim_threshold):            
             self.embedder = SentenceTransformer(embedding_model)
-            self.sim_threshold = .65
+            self.sim_threshold = sim_threshold
             
     def chunk(self, text: str):
         """
@@ -21,13 +18,19 @@ class SemanticChunker:
         3. Grouping based on semantic similarity
         """
         # Step 1: Sentence tokenize
-        sentences = nltk.sent_tokenize(text)
+        doc = nlp(text)
+        sentences = [sent.text.strip() for sent in doc.sents]
 
         if len(sentences) == 0:
             return []
 
         # Step 2: Encode sentences
-        embeddings = self.embedder.encode(sentences)
+        embeddings = self.embedder.encode(
+            sentences,
+            batch_size=32,
+            show_progress_bar=False
+        )
+
 
         chunks = []
         current_chunk = [sentences[0]]
@@ -45,7 +48,7 @@ class SemanticChunker:
                 chunks.append(" ".join(current_chunk))
                 current_chunk = [sentences[i]]
 
-        chunks.append(" ".join(current_chunk))  # final chunk
+        chunks.append(" ".join(current_chunk))  
 
         return chunks
 
@@ -57,7 +60,7 @@ if __name__ == "__main__":
     for doc in docs: 
         print(doc.page_content) 
     text = "\n".join([d.page_content for d in docs]) 
-    chunker = SemanticChunker()
+    chunker = SemanticChunker(embedding_model="all-MiniLM-L6-v2", sim_threshold=0.65)
     chunks = chunker.chunk(text) 
     for i, chunk in enumerate(chunks): 
         print(f"Chunk {i+1}:\n{chunk}\n{'-'*40}\n")

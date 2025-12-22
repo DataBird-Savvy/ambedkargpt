@@ -1,0 +1,40 @@
+# Chunking and Retrieval Configuration
+
+chunking:
+  sim_threshold: 0.65
+  spacy_model: en_core_web_sm
+
+# Embedding settings
+embedding:
+  model_name: all-MiniLM-L6-v2
+
+merger:
+  max_tokens: 2048
+  subchunk_size: 256
+  overlap: 64
+
+# Local Graph RAG parameters
+local_retrieval:
+  tau_e: 0.35
+  tau_d: 0.25
+  top_k: 10
+
+# Global Graph RAG parameters
+global_retrieval:
+  top_k_communities: 5
+  top_k_chunks: 10
+
+# LLM settings
+llm:
+  provider: ollama
+  model: mistral
+  temperature: 0.2
+  max_tokens: 512
+
+# Paths
+paths:
+  knowledge_graph: data/processed/knowledge_graph.pkl
+  chunks: data/processed/chunks.json
+  community_nodes: data/processed/community_nodes.json
+  community_chunks: data/processed/community_chunks.json
+  community_embeddings: data/processed/community_embeddings.pkl

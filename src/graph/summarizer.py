@@ -2,10 +2,16 @@ import networkx as nx
 from typing import Dict
 from src.llm.llm_client import LLMClient
 from logger import logger
+import numpy as np
+import pickle
 
 class GraphSummarizer:
-    def __init__(self):
+    def __init__(self, save_embeddings_path=None):
+        """
+        save_embeddings_path: optional path to save computed community embeddings as .pkl
+        """
         self.llm = LLMClient()
+        self.save_embeddings_path = save_embeddings_path
 
     def summarize_community(
         self,
@@ -23,9 +29,26 @@ class GraphSummarizer:
         for node, cid in community_map.items():
             communities.setdefault(cid, []).append(node)
 
+        # Compute community embeddings (mean of node embeddings)
+        community_embs = {}
+        for cid, nodes in communities.items():
+            embs = [
+                G.nodes[n]["embedding"]
+                for n in nodes
+                if "embedding" in G.nodes[n]
+            ]
+            if embs:
+                community_embs[int(cid)] = np.mean(embs, axis=0)
+
+        # Save embeddings if path is provided
+        if self.save_embeddings_path:
+            with open(self.save_embeddings_path, "wb") as f:
+                pickle.dump(community_embs, f)
+            logger.info("Saved %d community embeddings to %s", len(community_embs), self.save_embeddings_path)
+
         summaries = {}
 
-        # 2. Process each community
+        # 2. Process each community for summarization
         for cid, entities in communities.items():
             logger.info("Processing community ID %d | %d entities", cid, len(entities))
             relations = []
@@ -44,7 +67,7 @@ class GraphSummarizer:
                 len(supporting_chunks)
             )
 
-            # 3. Build evidence text
+            # Build evidence text
             chunk_texts = [
                 chunk_lookup[ch][:300]
                 for ch in list(supporting_chunks)[:5]
@@ -82,8 +105,8 @@ if __name__ == "__main__":
     from .graph_builder import GraphBuilder
     from .community_detector import CommunityDetector
     import json
-
-    gb = GraphBuilder()
+    embedding_model = "all-MiniLM-L6-v2"
+    gb = GraphBuilder(embedding_model)
     G_multi = gb.load("data/processed/knowledge_graph.pkl")
 
     # Load chunks
@@ -97,7 +120,8 @@ if __name__ == "__main__":
     detector = CommunityDetector()
     community_map = detector.detect(G_multi)
 
-    summerizer = GraphSummarizer()
+    # Initialize summarizer and save embeddings
+    summerizer = GraphSummarizer(save_embeddings_path="data/processed/community_embeddings.pkl")
     result = summerizer.summarize_community(G_multi, community_map, chunks)
 
     for cid, summary in result.items():

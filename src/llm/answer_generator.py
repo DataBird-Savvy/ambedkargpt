@@ -1,14 +1,14 @@
-from src.llm.llm_client import LLMClient
+from llm.llm_client import LLMClient
 from typing import List, Tuple, Dict
 from logger import logger
-from src.retrieval.ranker import ChunkReranker
+from retrieval.ranker import ChunkReranker
 
 
 from typing import List, Tuple, Dict
 from logger import logger
-from src.llm.llm_client import LLMClient
-from src.retrieval.ranker import ChunkReranker
-from src.llm.prompt_templates import SEMRAGPromptBuilder
+from llm.llm_client import LLMClient
+from retrieval.ranker import ChunkReranker
+from llm.prompt_templates import SEMRAGPromptBuilder
 
 
 class RAGAnswerGenerator:
@@ -47,40 +47,25 @@ class RAGAnswerGenerator:
         logger.info("Query: %s", query)
 
         # ---------- Step 1: Rerank ----------
-        reranked_chunks = self.reranker.rerank(
+        reranked_context = self.reranker.rerank(
             retrieved_local=retrieved_local,
             retrieved_global=retrieved_global,
             top_k=self.top_k_context,
         )
+        context_text = "\n\n".join(
+            text for _, (_, _, _, text) in enumerate(reranked_context)
+        )
 
-        if not reranked_chunks:
+
+
+        if not reranked_context:
             logger.warning("No chunks available after reranking")
             return "The provided documents do not contain enough information."
-
-        # ---------- Step 2: Split LOCAL & GLOBAL context ----------
-        local_parts = []
-        global_parts = []
-
-        for chunk_id, score, source, text in reranked_chunks:
-            if source == "Local":
-                local_parts.append(f"[Local-{chunk_id}]: {text}")
-            else:
-                global_parts.append(f"[Global-{chunk_id}]: {text}")
-
-        local_context = "\n\n".join(local_parts)
-        global_context = "\n\n".join(global_parts)
-
-        logger.info(
-            "Context prepared | local_chunks=%d | global_chunks=%d",
-            len(local_parts),
-            len(global_parts),
-        )
 
         # ---------- Step 3: Prompt ----------
         prompt = self.prompt_builder.build(
             query=query,
-            local_context=local_context,
-            global_context=global_context,
+            context=context_text          
         )
 
         logger.info("Prompt constructed")
@@ -138,6 +123,7 @@ if __name__ == "__main__":
     )
 
     query_emb = model.encode(query)
+    query_emb = query_emb.reshape(1, -1)
     retrieved_local = retriever.retrieve(query_emb)
     chunk_texts = {
         c["id"]: c["text"] for c in chunks

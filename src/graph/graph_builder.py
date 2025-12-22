@@ -1,11 +1,10 @@
 
 import networkx as nx
-from typing import List, Dict
 import pickle
 from sentence_transformers import SentenceTransformer
 
 class GraphBuilder:
-    def __init__(self, embedding_model="all-MiniLM-L6-v2"):
+    def __init__(self, embedding_model):
         self.G = nx.MultiDiGraph()
         self.embedder = SentenceTransformer(embedding_model)
         self.entity_cache = {}  # avoid re-embedding
@@ -63,14 +62,17 @@ class GraphBuilder:
 if __name__ == "__main__":
 
     import json
-    from entity_extractor import EntityExtractor
+    
+    from src.graph.entity_extractor import EntityExtractor
     chunk_path = "data/processed/chunks.json"
+    embedding_model = "all-MiniLM-L6-v2"
+    spacy_model = "en_core_web_sm"
 
     with open(chunk_path, "r", encoding="utf-8") as f:
         chunks = json.load(f)
-    extractor = EntityExtractor()
+    extractor = EntityExtractor(spacy_model)
     extracted = extractor.extract(chunks)
 
-    builder = GraphBuilder()
+    builder = GraphBuilder(embedding_model)
     graph = builder.build(extracted)
     builder.save()

@@ -1,13 +1,13 @@
 import tiktoken
-from semantic_chunker import SemanticChunker
+from src.chunking.semantic_chunker import SemanticChunker
 from sentence_transformers import SentenceTransformer
 
 class SemanticChunkMerger:
-    def __init__(self, max_tokens=1024, subchunk_size=128, overlap=32):
+    def __init__(self, max_tokens, subchunk_size, overlap,embedding_model):
         self.max_tokens = max_tokens
         self.subchunk_size = subchunk_size
         self.overlap = overlap
-        self.embedder = SentenceTransformer("all-MiniLM-L6-v2")
+        self.embedder = SentenceTransformer(embedding_model)
         self.tokenizer = tiktoken.get_encoding("cl100k_base")
 
     def merge_chunks(self, chunks):
@@ -42,15 +42,45 @@ class SemanticChunkMerger:
                     final_chunks.append(sub_text)
 
         return final_chunks
+    
+    def merge_and_embed(self, chunks):
+        """
+        Merge chunks with buffer + sub-chunking and generate embeddings.
+        Returns:
+            final_chunks: list of texts
+            embeddings: list of vectors
+        """
+        final_chunks = self.merge_chunks(chunks)
+        embeddings = self.embedder.encode(final_chunks)
+        return final_chunks, embeddings
+    def save_json(self, final_chunks, embeddings, output_path):
+        chunk_data = [
+            {"id": i + 1, "text": final_chunks[i], "embedding": embeddings[i].tolist()}
+            for i in range(len(final_chunks))
+        ]
+        import os, json
+        os.makedirs(os.path.dirname(output_path), exist_ok=True)
+        with open(output_path, "w", encoding="utf-8") as f:
+            json.dump(chunk_data, f, ensure_ascii=False, indent=2)
+    
 if __name__ == "__main__":
-    data_path = "data/Ambedkar_book.pdf" 
+    
     import json
     import os
-
+    
+    data_path = "data/Ambedkar_book.pdf" 
+    spacy_model = "en_core_web_sm"
+    sim_threshold = 0.65
+    embedding_model = "all-MiniLM-L6-v2"
+    max_tokens = 1024
+    subchunk_size = 128
+    overlap = 32
     output_path = "data/processed/chunks.json"
+    
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
 
     from langchain_community.document_loaders import PyPDFLoader 
+    from src.chunking.semantic_chunker import SemanticChunker
     loader = PyPDFLoader(data_path) 
     docs = loader.load() 
 
@@ -60,27 +90,19 @@ if __name__ == "__main__":
 
     text = "\n".join([d.page_content for d in docs]) 
 
-    chunker = SemanticChunker()
+    chunker = SemanticChunker(embedding_model=embedding_model, sim_threshold=sim_threshold)
     chunks = chunker.chunk(text) 
 
-    merger = SemanticChunkMerger()
-    merged_chunks = merger.merge_chunks(chunks)
+    merger = SemanticChunkMerger(
+        max_tokens=max_tokens,
+        subchunk_size=subchunk_size,
+        overlap=overlap,
+        embedding_model=embedding_model
+    )
 
-    # Wrap each chunk in dict with 'id' and 'text'
-    embeddings = merger.embedder.encode(merged_chunks)
-
-    chunk_data = [
-        {
-            "id": i + 1,
-            "text": merged_chunks[i],
-            "embedding": embeddings[i].tolist()  # IMPORTANT
-        }
-        for i in range(len(merged_chunks))
-    ]
+    merged_chunks, embeddings = merger.merge_and_embed(chunks)
+    merger.save_json(merged_chunks, embeddings, output_path)
 
 
-    # Save to JSON
-    with open(output_path, "w", encoding="utf-8") as f:
-        json.dump(chunk_data, f, ensure_ascii=False, indent=2)
+  
 
-    print(f"Saved {len(chunk_data)} chunks to {output_path}")
