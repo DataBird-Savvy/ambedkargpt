@@ -3,8 +3,8 @@ import spacy
 from typing import List, Dict
 
 class EntityExtractor:
-    def __init__(self, model="en_core_web_sm"):
-        self.nlp = spacy.load(model)
+    def __init__(self, spacy_model):
+        self.nlp = spacy.load(spacy_model)
 
     def extract(self, chunks: List[Dict]) -> List[Dict]:
         """
@@ -44,11 +44,12 @@ class EntityExtractor:
 if __name__ == "__main__":
     import json
     chunk_path = "data/processed/chunks.json"
+    spacy_model = "en_core_web_sm"
 
     with open(chunk_path, "r", encoding="utf-8") as f:
         chunks = json.load(f)
 
-    extractor = EntityExtractor()
+    extractor = EntityExtractor(spacy_model)
     extracted = extractor.extract(chunks)
     print("Extracted Entities and Relations:",extracted)
     for item in extracted:

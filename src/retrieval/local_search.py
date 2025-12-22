@@ -1,6 +1,6 @@
 import networkx as nx
 import numpy as np
-from src.retrieval.ranker import ChunkReranker
+from retrieval.ranker import ChunkReranker
 from logger import logger
 from sklearn.metrics.pairwise import cosine_similarity
 
@@ -57,9 +57,10 @@ class LocalGraphRAGRetriever:
         entity_vectors = [self.entity_embeddings[e] for e in entities]
 
         logger.info("Step 1 | Computing similarity for %d entities", len(entities))
+        logger.info("entities sample: %s", entities[:5])
 
         entity_similarities = cosine_similarity(query_embedding.reshape(1, -1), entity_vectors)[0]
-
+        logger.info("entity_similarities sample: %s", entity_similarities[:5])
         filtered_entities = [
             (entities[i], entity_similarities[i])
             for i in range(len(entities))
@@ -70,6 +71,7 @@ class LocalGraphRAGRetriever:
             "Step 1 | Filtered entities above tau_e: %d",
             len(filtered_entities),
         )
+        logger.info("Filtered entities sample: %s", filtered_entities[:5])
 
         # Log top few entity scores
         for e, s in sorted(filtered_entities, key=lambda x: x[1], reverse=True)[:5]:
@@ -195,6 +197,7 @@ if __name__ == "__main__":
     query_emb = model.encode(
         "What did Dr. B. R. Ambedkar say about the caste system?"
     )
+    
 
     results = retriever.retrieve(query_emb)
     print(results)

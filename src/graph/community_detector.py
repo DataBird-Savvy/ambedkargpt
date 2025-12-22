@@ -1,5 +1,3 @@
-# src/graph/community_detector.py
-
 import networkx as nx
 import community  # python-louvain
 from typing import Dict
@@ -71,20 +69,20 @@ class CommunityDetector:
 
 
 if __name__ == "__main__":
-    # Load saved MultiDiGraph
-    gb = GraphBuilder()
+    from src.graph.graph_builder import GraphBuilder
+    gb = GraphBuilder(embedding_model = "all-MiniLM-L6-v2")
     G_multi = gb.load("data/processed/knowledge_graph.pkl")
 
-    # Detect communities
+   
     detector = CommunityDetector()
     community_map = detector.detect(G_multi)
 
-    # 2️⃣ Build artifacts
+    
     community_nodes, community_chunks = detector.build_artifacts(
         G_multi, community_map
     )
 
-    # 3️⃣ Save
+ 
     detector.save(community_map, community_nodes, community_chunks)
 
     print(

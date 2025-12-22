@@ -1,36 +1,34 @@
 class SEMRAGPromptBuilder:
     """
-    Optimized prompt: concise instructions, clear context, minimal repetition.
+    Professional prompt builder for SEMRAG-based RAG systems.
+    Produces concise answers grounded in retrieved context without mentioning sources.
     """
 
     def __init__(
         self,
         system_role: str | None = None,
-        refusal_message: str = "The provided documents do not contain enough information."
+        refusal_message: str = "I’m sorry, I don’t have enough information to answer that question."
     ):
         self.system_role = system_role or (
-            "You are an expert research assistant answering questions "
-            "strictly using the provided context from Dr. B. R. Ambedkar's works."
+            "You are a knowledgeable research assistant specializing in Dr. B.R. Ambedkar's works. "
+            "Provide factual, precise, and concise answers based only on the provided context."
         )
         self.refusal_message = refusal_message
 
-    def build(self, query: str, local_context: str, global_context: str) -> str:
+    def build(self, query: str, context: str) -> str:
         return f"""
 {self.system_role}
 
 Instructions:
 - Answer strictly using the provided context.
-- Use local evidence first; global context only if local is insufficient.
-- Do NOT use external knowledge or fabricate information.
-- If insufficient info, reply exactly: "{self.refusal_message}".
-- Citations are internal; do NOT output chunk IDs or labels.
+- Give clear, concise, and professional responses.
+- Do NOT mention sources, context IDs, or retrieval steps.
+- Do NOT use external knowledge or make assumptions.
+- If the context is insufficient, respond exactly:
+  "{self.refusal_message}"
 
 Context:
-Local (factual):
-{local_context}
-
-Global (themes/background):
-{global_context}
+{context}
 
 Question:
 {query}
