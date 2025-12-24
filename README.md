@@ -108,6 +108,15 @@ ambedkargpt/
 ├── setup.py
 └── README.md
 ```
+## 🧪 Testing Strategy
+```
+| Test File             | Test Type        | What It Verifies                                              | Why It Matters                                           |
+| --------------------- | ---------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
+| `test_chunking.py`    | Unit Test        | Validates semantic/text chunking logic                        | Ensures documents are split correctly before embedding   |
+| `test_retrieval.py`   | Unit Test        | Tests local and global retrieval scoring & ranking            | Confirms relevant chunks are selected accurately         |
+| `test_reranker.py`    | Unit Test        | Validates merging and reranking of retrieved chunks           | Ensures best context is passed to the LLM                |
+| `test_integration.py` | Integration Test | Runs the full RAG pipeline end-to-end using mocked components | Verifies system wiring without heavy models or real data |
+```
 ## 📚 References
 
 - SEMRAG: Semantic Retrieval-Augmented Generation (Research Paper)
