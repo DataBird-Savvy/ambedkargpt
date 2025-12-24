@@ -21,7 +21,7 @@ The system follows the SEMRAG pipeline:
    - Entity extraction using spaCy
    - Relationship extraction via dependency parsing
    - Graph construction using NetworkX
-   - Community detection (Louvain / Leiden)
+   - Community detection (Louvain )
 
 ## 3. Retrieval Strategies
 
@@ -42,11 +42,11 @@ SEMRAG employs a **dual retrieval strategy** that combines precise entity-level 
 
 | Component | Description |
 |---------|-------------|
-| **LLM Provider** | Local LLMs (Mistral / Llama 3) served via **Ollama** |
+| **LLM Provider** | Local LLMs (Mistral) served via **Ollama** |
 | **Prompt Strategy** | Professionally designed SEMRAG prompt template with silent grounding |
 | **Context Input** | Reranked local + global chunks (no chunk IDs or metadata) |
 | **Answer Generation** | Concise, factual responses strictly grounded in retrieved context |
-| **Hallucination Control** | Low temperature (0.1–0.2) and strict prompt constraints |
+| **Hallucination Control** | Low temperature (0.2) and strict prompt constraints |
 
 ---
 
@@ -60,7 +60,7 @@ SEMRAG employs a **dual retrieval strategy** that combines precise entity-level 
 - networkx
 - scikit-learn
 - langchain
-- Ollama (Llama3 / Mistral)
+- Ollama (Mistral)
 
 ---
 
@@ -114,14 +114,15 @@ ambedkargpt/
 | --------------------- | ---------------- | ------------------------------------------------------------- | -------------------------------------------------------- |
 | `test_chunking.py`    | Unit Test        | Validates semantic/text chunking logic                        | Ensures documents are split correctly before embedding   |
 | `test_retrieval.py`   | Unit Test        | Tests local and global retrieval scoring & ranking            | Confirms relevant chunks are selected accurately         |
-| `test_reranker.py`    | Unit Test        | Validates merging and reranking of retrieved chunks           | Ensures best context is passed to the LLM                |
 | `test_integration.py` | Integration Test | Runs the full RAG pipeline end-to-end using mocked components | Verifies system wiring without heavy models or real data |
 ```
-## 📚 References
 
-- SEMRAG: Semantic Retrieval-Augmented Generation (Research Paper)
-- Dr. B. R. Ambedkar – Collected Works
 
 ## Output:
 
 ![alt text](image.png)
+
+## 📚 References
+
+- SEMRAG: Semantic Retrieval-Augmented Generation (Research Paper)
+- Dr. B. R. Ambedkar – Collected Works
